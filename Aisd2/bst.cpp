@@ -382,7 +382,10 @@ void rotacjaL(Node* q, Tree& tree)
 	Node* p = q->right;
 	q->right = p->left;
 	p->left = q;
-	q->right->up = q;
+	if (q->right)
+	{
+		q->right->up = q;
+	}
 	p->up = q->up;
 	if (p->up)
 	{
@@ -407,7 +410,10 @@ void rotacjaR(Node* q, Tree& tree)
 	Node* p = q->left;
 	q->left = p->right;
 	p->right = q;
-	q->left->up = q;
+	if (q->left)
+	{
+		q->left->up = q;
+	}
 	p->up = q->up;
 	if (p->up)
 	{

@@ -4,6 +4,7 @@
 
 #define ENDL std::cout<<std::endl;
 
+
 class Node;
 
 Node* nastepnik(Node*);
@@ -24,6 +25,7 @@ public:
 	Node* findMin();
 	//lab2
 	void usunLiscie();
+	void usun(int val);
 
 	Tree();
 };
@@ -45,7 +47,7 @@ public:
 	Node(int val, Node* parent);
 	~Node();
 
-	void dodaj(int val, Node* parent);
+	void dodaj(int val, Tree& tree);
 	void preOrder();
 	void inOrder();
 	Node* findValue(int x);
@@ -55,6 +57,7 @@ public:
 	void usunLiscie();
 	void usunLiscie(float srednia);
 	void usun();
+	int usun(int val, Tree& tree);
 	void makeNull();
 };
 
@@ -87,7 +90,7 @@ void Tree::dodaj(int val)
 	}
 	else
 	{
-		root->dodaj(val, root);
+		root->dodaj(val, *this);
 	}
 }
 void Tree::dodaj(int* values, int size)
@@ -100,7 +103,7 @@ void Tree::dodaj(int* values, int size)
 
 	while (i < size)
 	{
-		root->dodaj(values[i++], root);
+		root->dodaj(values[i++], *this);
 	}
 }
 
@@ -175,45 +178,83 @@ void Tree::usunLiscie()
 	}
 }
 
+void Tree::usun(int val)
+{
+	if (root)
+	{
+		root->usun(val, *this);
+	}
+	else
+	{
+		std::cout << "Nie ma drzewa" << std::endl;
+	}
+}
+
 // Node
 
-void Node::dodaj(int val, Node* parent)
+void rotacjaL(Node*, Tree&);
+void rotacjaR(Node*, Tree&);
+void rotacjaRL_wlewo(Node*, Tree&);
+void rotacjaLR_wprawo(Node*, Tree&);
+
+void Node::dodaj(int val, Tree &tree)
 {
 	if (val >= value)
 	{
 		if (right)
 		{
-			right->dodaj(val, this);
-			// if (dodal):	komentarze jak zrobic zeby przy dodawaniu naprawial balans drzewa avl
-			//	bal += abs(bal->right);
+			right->dodaj(val, tree);
+			
+			balance_factor += fabs(right->balance_factor);
 
-			/*
-			if (bal * right->bal > 0):
+			if (balance_factor > 1)
 			{
-				rotacjaL();
+				balance_factor = 0;
+				if (right->balance_factor > 0)
+				{
+					right->balance_factor = 0;
+					rotacjaL(this, tree);
+				}
+				else
+				{
+					right->balance_factor = 0;
+					rotacjaRL_wlewo(this, tree);
+				}
 			}
-			else if (bal * right < 0):
-			{
-				rotacjaRL();
-			}
-			*/
 		}
 		else
 		{
 			right = new Node(val, this);
-			// bal += 1;
+			balance_factor++;
 		}
 	}
 	else
 	{
 		if (left)
 		{
-			left->dodaj(val, this);
+			left->dodaj(val, tree);
+
+			balance_factor -= fabs(left->balance_factor);
+
+			if (balance_factor < -1)
+			{
+				balance_factor = 0;
+				if (left->balance_factor < 0)
+				{
+					left->balance_factor = 0;
+					rotacjaR(this, tree);
+				}
+				else
+				{
+					left->balance_factor = 0;
+					rotacjaLR_wprawo(this, tree);
+				}
+			}
 		}
 		else
 		{
 			left = new Node(val, this);
-			// bal -= 1
+			balance_factor--;
 		}
 	}
 }
@@ -287,7 +328,7 @@ void Node::inOrder()
 	{
 		left->inOrder();
 	}
-	std::cout << value << std::endl;
+	std::cout << value << " " << balance_factor << std::endl;
 	if (right)
 	{
 		right->inOrder();
@@ -357,9 +398,11 @@ void Node::usunLiscie(float srednia)
 		right->usunLiscie(srednia);
 }
 
+// ta funkcja zla do usuwania avl, nie ma wywolania rekurencyjnego <->
+// latwego dostepu do ojca oraz informacji ktorym synem (lewym, prawym) jest usuwany wezel lub wezel w ktorym zmienia sie balance_factor
 void Node::usun()			// to do - naprawia balans po usuwanie, w wywolaniu dekonstruktora lub tutaj
 {
-	if (!(left || right))
+	if (!(left || right))	
 	{
 		delete this;
 		return;
@@ -403,6 +446,203 @@ void Node::usun()			// to do - naprawia balans po usuwanie, w wywolaniu dekonstr
 		return;
 	}
 }
+
+// usuwania nie jestem pewny czy w kazdym przypadku zadziala prawidlowo
+int Node::usun(int val, Tree& tree)
+{
+	if (val == value)
+	{
+		if (left && right)
+		{
+			Node* y = nastepnik(this);
+			value = y->value;
+			int wynik = right->usun(y->value, tree);
+
+			if (wynik == -2)	// tutaj niestety potrzebne jest skopiowanie (lub stworzenie funkcji) tego co sie dzieje gdy wraca z prawej, poniewaz musze zasymulowac przypadek ze usuwano lisc
+			{
+				balance_factor--;
+				if (balance_factor < -1)	// ponizsze z rysunku
+				{
+					if (left->balance_factor == 1)
+					{
+						balance_factor = 0;
+						left->balance_factor = 0;
+						rotacjaLR_wprawo(this, tree);
+					}
+					else
+					{
+						if (left->balance_factor == 0)
+						{
+							balance_factor = -1;
+							left->balance_factor = 1;
+						}
+						else if (left->balance_factor == -1)
+						{
+							balance_factor = 0;
+							left->balance_factor = 0;
+						}
+						rotacjaR(this, tree);
+					}
+					return false;	// czy po rotacji zawsze ok?
+				}
+				wynik /= 2;
+				return wynik;
+			}
+
+			// -1, 1, 3	-> usunieto cokolwiek we wczesniejszych wywolaniach
+			if (!wynik)
+			{
+				if (right->balance_factor == 0)	// pierwszy napotkany wezel gdzie balance_factor wezla po lewej po usuwaniu rowna sie 0
+					// w tej sytuacji zawsze sie cos usunelo, wiec musiala nastapic zmiana dlugosci od ktoregos z jego dzieci ze teraz sie rowna 0
+					// niemozliwa sytuacja po rotacji bo wtedy wynik == 0
+					// czy to zawsze ojciec usuwanego wezla? - nie
+				{
+					balance_factor--;
+					return wynik;
+				}
+			}
+
+			// 0 - nie usunieto lub wykonano rotacje -> wszystko powyzej jest juz ok
+			// Bedzie wracac caly czas zwracajac false -> nic sie nie stanie
+			return false;
+
+		}
+		else if (!(left && right) && (left || right))
+		{
+			usun();
+		}
+		else if (!(left || right))
+		{
+			delete this;
+		}
+
+		return -2;			// wartosc -2 zostala po poprzedniej implementacji, gdy jeszcze kazdy przypadek byl rozpatrzany osobno. Teraz juz wiem, ze kazdy da sie sprowadzic do przypadku ze usuwano lisc.
+	}
+
+	if (val < value)
+	{
+		if (!left)
+		{
+			goto end;
+		}
+		int wynik = left->usun(val, tree);
+
+		// -2, 2, 6 -> usunieto w powyzszym wywolaniu
+
+		if (wynik == -2) // -2, usunieto wezel w powyzszym wywolaniu
+		{
+			balance_factor++;
+			if (balance_factor > 1)	// ponizsze operacje z rysunku
+			{
+				if (right->balance_factor == -1)
+				{
+					balance_factor = 0;
+					right->balance_factor = 0;
+					rotacjaRL_wlewo(this, tree);
+				}
+				else
+				{
+					if (right->balance_factor == 0)
+					{
+						balance_factor = 1;
+						right->balance_factor = -1;
+					}
+					else if (right->balance_factor == 1)
+					{
+						balance_factor = 0;
+						right->balance_factor = 0;
+					}
+
+					rotacjaL(this, tree);
+				}
+				return false;
+			}
+			wynik /= 2;
+			return wynik;
+		}
+
+
+		// -1, 1, 3	-> usunieto cokolwiek we wczesniejszych wywolaniach
+		if (!wynik)
+		{
+			if (left->balance_factor == 0)	// pierwszy napotkany wezel gdzie balance_factor wezla po lewej po usuwaniu rowna sie 0
+											// w tej sytuacji zawsze sie cos usunelo, wiec musiala nastapic zmiana dlugosci od ktoregos z jego dzieci ze teraz sie rowna 0
+											// niemozliwa sytuacja po rotacji bo wtedy wynik == 0
+											// czy to zawsze ojciec usuwanego wezla? - nie, w takim razie kiedy zakonczyc? (po sprawdzeniu, nigdy)
+			{
+				balance_factor++;
+				return wynik;
+			}
+		}
+
+		// 0 - nie usunieto lub wykonano rotacje -> wszystko powyzej jest juz ok
+		// Bedzie wracac caly czas zwracajac false -> nic sie nie stanie
+		return false;
+	}
+
+	if (val > value)
+	{
+		if (!right)
+		{
+			goto end;
+		}
+		int wynik = right->usun(val, tree);
+
+		if (wynik == -2)	// usunieto wezel w powyzszym wywolaniu
+		{
+			balance_factor--;
+			if (balance_factor < -1)	// ponizsze z rysunku
+			{
+				if (left->balance_factor == 1)
+				{
+					balance_factor = 0;
+					left->balance_factor = 0;
+					rotacjaLR_wprawo(this, tree);
+				}
+				else
+				{
+					if (left->balance_factor == 0)
+					{
+						balance_factor = -1;
+						left->balance_factor = 1;
+					}
+					else if (left->balance_factor == -1)
+					{
+						balance_factor = 0;
+						left->balance_factor = 0;
+					}
+					rotacjaR(this, tree);
+				}
+				return false;	// czy po rotacji zawsze ok?
+			}
+			wynik /= 2;
+			return wynik;
+		}
+
+		// -1, 1, 3	-> usunieto cokolwiek we wczesniejszych wywolaniach
+		if (!wynik)
+		{
+			if (right->balance_factor == 0)	// pierwszy napotkany wezel gdzie balance_factor wezla po lewej po usuwaniu rowna sie 0
+				// w tej sytuacji zawsze sie cos usunelo, wiec musiala nastapic zmiana dlugosci od ktoregos z jego dzieci ze teraz sie rowna 0
+				// niemozliwa sytuacja po rotacji bo wtedy wynik == 0
+				// czy to zawsze ojciec usuwanego wezla? - nie
+			{
+				balance_factor--;
+				return wynik;
+			}
+		}
+
+		// 0 - nie usunieto lub wykonano rotacje -> wszystko powyzej jest juz ok
+		// Bedzie wracac caly czas zwracajac false -> nic sie nie stanie
+		return false;
+	}
+	
+	end:
+
+	std::cout << "Nie ma wezla o takiej wartosci" << std::endl;
+	return false;
+}
+
 
 void Node::makeNull()
 {
@@ -464,7 +704,10 @@ void rotacjaL(Node* q, Tree& tree)
 	Node* p = q->right;
 	q->right = p->left;
 	p->left = q;
-	q->right->up = q;
+	if (q->right)
+	{
+		q->right->up = q;
+	}
 	p->up = q->up;
 	if (p->up)
 	{
@@ -489,7 +732,10 @@ void rotacjaR(Node* q, Tree& tree)
 	Node* p = q->left;
 	q->left = p->right;
 	p->right = q;
-	q->left->up = q;
+	if (q->left)
+	{
+		q->left->up = q;
+	}
 	p->up = q->up;
 	if (p->up)
 	{
@@ -508,8 +754,6 @@ void rotacjaR(Node* q, Tree& tree)
 	}
 	q->up = p;
 }
-
-// niepotrzebne tutaj, ale ok
 
 void rotacjaRL_wlewo(Node* q, Tree& tree)
 {
@@ -586,69 +830,70 @@ int main()
 	Tree tree;
 
 	// rozne polecenia na drzewie sprawdzajace dzialanie funkcji
+	// wszystkie co dzialaly na BST powinny dzialac rowniez na drzewie AVL
 
 	/*
-	tree.dodaj(30);
+	{
+		int temp[] = {0,5,10,15,8,-2,-4};
+		tree.dodaj(temp, sizeof(temp) / sizeof(int));
+	}
+
+	tree.inOrder();
+	// OK
+	*/
+
+	tree.dodaj(0);
 	tree.dodaj(5);
-	tree.dodaj(6);
-	tree.dodaj(7);
+
+	tree.inOrder();	//ok
+	ENDL;
+
+	tree.dodaj(10);
+
+	tree.inOrder();	//ok
+	ENDL;
+
+	tree.dodaj(15);
 	tree.dodaj(8);
-	tree.dodaj(9);
 
-	tree.inOrder();
-	std::cout << "Test poprzednik(x).value oraz nastepnik(x).value, x = tree.findvalue(9)\npoprzednik(x).value expected 8 = " << poprzednik(tree.findValue(9))->value << std::endl
-		<< "nastepnik(x).value expected 30 = " << nastepnik(tree.findValue(9))->value << std::endl;
+	tree.inOrder();	//ok
+	ENDL;
 
-	tree.usunLiscie();
+	tree.dodaj(-2);
 
-	tree.inOrder();
+	tree.inOrder();	//ok
+	ENDL;
 
-	*/
+	tree.dodaj(-4);
 
-
-
-	{
-		int temp[] = { 22,18,57,33,24,44,82 };
-		tree.dodaj(temp, sizeof(temp) / sizeof(int));
-	}
-
-	std::cout << "Max: " << tree.findMax()->value << std::endl;
-	std::cout << "Min: " << tree.findMin()->value << std::endl;
-
-	std::cout << "\t" << tree.root->value << std::endl
-		<< tree.root->left->value << "\t\t\t" << tree.root->right->value << std::endl
-		<< "\t\t" << tree.root->right->left->value << "\t\t" << tree.root->right->right->value << std::endl
-		<< "\t" << tree.root->right->left->left->value << "\t" << tree.root->right->left->right->value << std::endl;
-
-	rotacjaRL_wlewo(tree.root, tree);
-	ENDL
-		std::cout << "\t\t" << tree.root->value << std::endl
-		<< "\t" << tree.root->left->value << "\t\t" << tree.root->right->value << std::endl
-		<< tree.root->left->left->value << "\t\t" << tree.root->left->right->value << " " << tree.root->right->left->value << "\t\t" << tree.root->right->right->value << std::endl;
-	rotacjaRL_wprawo(tree.root, tree);
-	ENDL
-		std::cout << "\t" << tree.root->value << std::endl
-		<< tree.root->left->value << "\t\t\t" << tree.root->right->value << std::endl
-		<< "\t\t" << tree.root->right->left->value << "\t\t" << tree.root->right->right->value << std::endl
-		<< "\t" << tree.root->right->left->left->value << "\t" << tree.root->right->left->right->value << std::endl;
+	tree.inOrder();	//ok
+	ENDL;
+	tree.preOrder();
+	ENDL;
 
 
-	/*
-	{
-		int temp[] = { 15,6,-5,-8,14,8,12,13,22,18,17,27,37 };
-		tree.dodaj(temp, sizeof(temp) / sizeof(int));
-	}
+	tree.usun(0);	// usuwanie liscia ok
 
-	tree.inOrder();
+	tree.inOrder(); //ok
+	ENDL;
+	tree.preOrder();
+	ENDL;
 
-	zadInne1(6, tree);
-	*/
+	tree.usun(-2);	// usuwanie wezla ktory ma jednego syna
+	tree.inOrder(); //ok
+	ENDL;
+	tree.preOrder();
+	ENDL;
 
-	/*
-	tree.findMax()->value = 100;
-	zadInne2(tree);
-	*/
+	tree.usun(10);	// usuwanie wezla ktory ma dwoch synow
+	tree.inOrder(); //wyglada ok
+	ENDL;
+	tree.preOrder();
+	ENDL;
 
-	ENDL
-		tree.inOrder();
+	tree.usun(-4); // usuwanie liscia, ale wymaga rotacji
+	tree.inOrder(); //wyglada ok
+	ENDL;
+	tree.preOrder();
+	ENDL;
 }
