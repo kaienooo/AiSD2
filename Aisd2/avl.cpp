@@ -64,7 +64,7 @@ public:
 Node::Node(int val, Node* parent) : value(val), up(parent), left(0), right(0), balance_factor(0)
 {}
 
-Node::~Node()	// poprawic zeby przy usuwaniu naprawial balans
+Node::~Node()	// poprawic zeby przy usuwaniu naprawial balans [DONE] - w funkcji
 {
 	if (!up)
 	{
@@ -106,20 +106,6 @@ void Tree::dodaj(int* values, int size)
 		root->dodaj(values[i++], *this);
 	}
 }
-
-/*
-void Tree::dodajAVL(int val)
-{
-	if (!root)
-	{
-		root = new Node(val, 0);
-	}
-	else
-	{
-		root->dodajAVL(val, root, this);
-	}
-}
-*/
 
 void Tree::preOrder()
 {
@@ -259,56 +245,6 @@ void Node::dodaj(int val, Tree &tree)
 	}
 }
 
-/*
-bool Node::dodajAVL(int val, Node* parent, Tree* tree)
-{
-	if (val >= value)
-	{
-		if (right)
-		{
-			right->dodajAVL(val, this, tree);
-			balance_factor += fabs(right->balance_factor);
-			// if (dodal):
-			//	bal += abs(bal->right);
-
-			/*
-			if (bal * right->bal > 0):
-			{
-				rotacjaL();
-			}
-			else if (bal * right < 0):
-			{
-				rotacjaRL();
-			}
-			*/
-
-			/*
-		}
-		else
-		{
-			right = new Node(val, this);
-			balance_factor++;
-			// bal += 1;
-		}
-	}
-	else
-	{
-		if (left)
-		{
-			left->dodajAVL(val, this, tree);
-			balance_factor -= fabs(left->balance_factor);
-			// to do balance_factor
-		}
-		else
-		{
-			left = new Node(val, this);
-			balance_factor--;
-			// bal -= 1
-		}
-	}
-}
-*/
-
 void Node::preOrder()
 {
 	std::cout << value << std::endl;
@@ -400,7 +336,7 @@ void Node::usunLiscie(float srednia)
 
 // ta funkcja zla do usuwania avl, nie ma wywolania rekurencyjnego <->
 // latwego dostepu do ojca oraz informacji ktorym synem (lewym, prawym) jest usuwany wezel lub wezel w ktorym zmienia sie balance_factor
-void Node::usun()			// to do - naprawia balans po usuwanie, w wywolaniu dekonstruktora lub tutaj
+void Node::usun()
 {
 	if (!(left || right))	
 	{
@@ -505,6 +441,8 @@ int Node::usun(int val, Tree& tree)
 			// 0 - nie usunieto lub wykonano rotacje -> wszystko powyzej jest juz ok
 			// Bedzie wracac caly czas zwracajac false -> nic sie nie stanie
 			return false;
+
+			//koniec kopii
 
 		}
 		else if (!(left && right) && (left || right))
