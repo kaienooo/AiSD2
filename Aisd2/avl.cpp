@@ -336,6 +336,7 @@ void Node::usunLiscie(float srednia)
 
 // ta funkcja zla do usuwania avl, nie ma wywolania rekurencyjnego <->
 // latwego dostepu do ojca oraz informacji ktorym synem (lewym, prawym) jest usuwany wezel lub wezel w ktorym zmienia sie balance_factor
+// uzyta do usuwanie wezla gdy juz zadbano o balans
 void Node::usun()
 {
 	if (!(left || right))	

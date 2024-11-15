@@ -25,12 +25,12 @@ public:
 	//lab2
 	void usunLiscie();
 
+	void rezerwuj(int val);
+
 	Tree();
 };
 
 Tree::Tree() : root(0) {};
-
-
 
 class Node
 {
@@ -53,6 +53,8 @@ public:
 	void usunLiscie(float srednia);
 	void usun();
 	void makeNull();
+
+	void rezerwuj(int val);
 };
 
 Node::Node(int val, Node* parent) : value(val), up(parent), left(0), right(0)
@@ -76,17 +78,6 @@ Node::~Node()
 
 //Tree
 
-void Tree::dodaj(int val)
-{
-	if (!root)
-	{
-		root = new Node(val, 0);
-	}
-	else
-	{
-		root->dodaj(val, root);
-	}
-}
 void Tree::dodaj(int* values, int size)
 {
 	int i = 0;
@@ -155,6 +146,33 @@ void Tree::usunLiscie()
 	else
 	{
 		std::cout << "Nie ma drzewa" << std::endl;
+	}
+}
+
+void Tree::rezerwuj(int val)
+{
+	int timem = (val / 100) * 60 + val % 100;
+
+	if (timem < 0)
+	{
+		std::cout << "Nie istnieje taka godzina\n";
+		return;
+	}
+
+	if (timem > 1439)
+	{
+		std::cout << "Nie istnieje taka godzina\n";
+		return;
+	}
+
+	if (!root)
+	{
+		root = new Node(timem, 0);
+		std::cout << "Dodano";
+	}
+	else
+	{
+		root->rezerwuj(timem);
 	}
 }
 
@@ -335,6 +353,47 @@ void Node::makeNull()
 	delete this;
 }
 
+void Node::rezerwuj(int val)
+{
+	if (val >= value)
+	{
+		if (val - value < 30)
+		{
+			std::cout << "Nie mozna zarezerwowac, poprzednia gra jeszcze sie nie skonczyla\n";
+			return;
+		}
+
+		if (right)
+		{	
+			right->rezerwuj(val);
+		}
+		else
+		{
+			right = new Node(val, this);
+			std::cout << "Dodano";
+		}
+	}
+	else
+	{
+
+		if (value - val < 30)
+		{
+			std::cout << "Nie mozna zarezerwowac, poprzednia gra jeszcze sie nie skonczyla\n";
+			return;
+		}
+		if (left)
+		{
+			
+			left->rezerwuj(val);
+		}
+		else
+		{	
+			left = new Node(val, this);
+			std::cout << "Dodano";
+		}
+	}
+}
+
 // z wykladu \/			- zainspirowane wykladem, ale zrozumiane
 
 Node* nastepnik(Node* x)
@@ -505,9 +564,27 @@ void zadInne2(Tree& tree)
 
 }
 
+void zadTorKregle(Tree& tree)
+{
+	int val;
+	std::cin >> val;
+
+	std::cout << "Dodaje do rezerwacji na godzine: " << val << "\nWynik: ";
+
+	tree.rezerwuj(val);
+}
+
 int main()
 {
 	Tree tree;
+
+	while (true)
+	{
+		zadTorKregle(tree);
+		ENDL;
+		tree.inOrder();
+	}
+
 
 	// rozne polecenia na drzewie sprawdzajace dzialanie funkcji
 
@@ -530,7 +607,7 @@ int main()
 	*/
 
 
-
+	/*
 	{
 		int temp[] = { 22,18,57,33,24,44,82 };
 		tree.dodaj(temp, sizeof(temp) / sizeof(int));
@@ -557,6 +634,7 @@ int main()
 		<< "\t" << tree.root->right->left->left->value << "\t" << tree.root->right->left->right->value << std::endl;
 
 
+	*/
 	/*
 	{
 		int temp[] = { 15,6,-5,-8,14,8,12,13,22,18,17,27,37 };
@@ -573,6 +651,8 @@ int main()
 	zadInne2(tree);
 	*/
 
+	/*
 	ENDL
 		tree.inOrder();
+	*/
 }
