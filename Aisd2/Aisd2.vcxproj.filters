@@ -19,7 +19,7 @@
     <None Include="dane" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="wzorzec.cpp">
+    <ClCompile Include="automat.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
