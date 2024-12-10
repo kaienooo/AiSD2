@@ -268,8 +268,6 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 					default:
 						break;
 					}
-
-
 				}
 			}
 			//napis_int(i + 1) = ...
