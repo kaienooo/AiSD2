@@ -186,14 +186,11 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 	int dlWzorca = getStringLength(argv[2]);
 	Automat automat(argv[2], dlWzorca);
 
-	std::cout << dlWzorca << std::endl;
-
 	int ilosc_wystapien = 0;
 	int i = 0;
 	char c;
 	while (plik.get(c))
 	{
-		std::cout << "Wywolanie " << i << "\nZnak = " << c << " Stan = " << automat.stan << std::endl;
 		if (getMaskFromCharacter(c) == MASK0)						// znak nie jest w obslugiwanym maksymalnym alfabacie (znak bialy lub nie przewidziano jego uzycia)
 		{
 			i++;
@@ -208,9 +205,7 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 
 		if (getMaskFromCharacter(c) & automat.alfabet)
 		{
-			std::cout << "Stan przed = " << automat.stan << std::endl;
 			automat.nextStan(c);
-			std::cout << "Stan po = " << automat.stan << std::endl;
 		}
 
 		if (automat.stan == dlWzorca)
@@ -325,7 +320,6 @@ Automat::Automat(const char* wzorzec, int dlWzorca) : wielkoscAlfabetu(dlWzorca)
 		temp[y] = wzorzec[y];
 	}
 
-	wypiszMaszyneStanow();
 	delete[] temp;
 	//delete[] wzorzec;
 }
