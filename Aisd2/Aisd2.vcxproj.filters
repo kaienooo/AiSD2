@@ -15,11 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
-    <None Include="dane" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="akmp.cpp">
+    <ClCompile Include="wzorzec.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>

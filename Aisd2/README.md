@@ -1,1 +1,0 @@
-Zaleca sie uruchamiac poszczegolne pliki zrodlowe poprzez odlaczanie/dolacznie do projektu aktualnie potrzbnego pliku (1 na raz)

@@ -1,3 +1,6 @@
+//https://github.com/kaienooo/AiSD2/
+//niektore wyjasnienia i dane
+
 #include <iostream>
 #include <fstream>
 
@@ -156,51 +159,81 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 	int dlWzorca = getStringLength(argv[2]);
 	KMP kmp((char*)argv[2], dlWzorca);
 
+	//kmp.wypiszTablice();
+
+	std::cout << std::endl;
+
 	int ilosc_wystapien = 0;
-	int i = 0;
-	int s = 0;
+	int i = 0;		// ktory znak teraz czytamy
+	int s = 0;		// w tej implementacji akurat s niepotrzebne, ale zostalo
+	int skippedCharsCount = 0;	// wyjasnienie w automat.cpp, tutaj ta sama zasada dzialania
+	// ciekawe, zachodzi zaleznosc i = s + (q - 1)
 	int q = 0;
 	char c;
 
 	while (plik.get(c))
-	{
-		while (i < s)
+	{	
+		if (c == '\n' or c == ' ' or c == '\t')
+		{
+			skippedCharsCount++;
+			i++;
+			continue;
+		}
+	start:
+		//std::cout << "i = " << i << "\t\ts = " << s << "\t\tq = ";
+		/*
+		if (i < s)
 		{
 			i++;
 			continue;
 		}
-
+		*/
 		if (c == argv[2][q])
 		{
 			q++;
-			i++;
-			s++;
-
 			if (q == dlWzorca)
 			{
+				//std::cout << q << std::endl;
+				s = s + q - kmp.tablicaPrzesuniec[q - 1];
+				i++;
 				q = 0;
 				switch (tryb)
 				{
 				case 0: // zliczanie i wypisywanie
-					std::cout << "Znaleziono wzorzec: " << argv[2] << " w miejscu " << i - dlWzorca << " znaku. Jest to " << ilosc_wystapien + 1 << " wystapienie\n";
+					std::cout << "Znaleziono wzorzec: " << argv[2] << " w miejscu " << i - dlWzorca - skippedCharsCount<< " znaku. Jest to " << ilosc_wystapien + 1 << " wystapienie\n";
 				case 1: // tylko zliczanie
 					ilosc_wystapien++;
 					break;
 				default:
 					break;
 				}
+				skippedCharsCount = 0;
+				
+			}
+			else
+			{
+				i++;
+				//std::cout << q << std::endl;
 			}
 		}
 		else
 		{
 			if (q == 0)
 			{
-				s++;
 				i++;
+				s++;
+				q = 0;
+				skippedCharsCount = 0;
+				///std::cout << q << std::endl;
 			}
 			else
 			{
-				s += q - kmp.tablicaPrzesuniec[q];
+				s = s + q - kmp.tablicaPrzesuniec[q-1];
+				q = 0;
+				//std::cout << q << std::endl;
+				goto start;				// nie chcemy wczytywac kolejnego znaku <==> porownujemy ten sam znak z przesunietym wzorcem 
+										// dlatego goto - bo zakonczenie petli spowodowalo by dostarczenie nowego znaku przez plik
+										// mozna to interpretowac jako continue; ale na starym znaku
 			}
 		}
 	}

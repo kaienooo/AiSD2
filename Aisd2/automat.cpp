@@ -1,3 +1,5 @@
+//https://github.com/kaienooo/AiSD2/
+//niektore wyjasnienia i dane
 #include <iostream>
 #include <fstream>
 
@@ -188,11 +190,19 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 
 	int ilosc_wystapien = 0;
 	int i = 0;
+	int skippedCharsCount = 0;	// ile znakow pomienieta wewnatrz odgadniete wzorca 
+								// np.		wzorzec	= abc
+								//			tekst	= a\nbc
+								// expected		i	= 0
+								// got			i	= 1
+								// fix			i	= i - skippedCharsCount = 0 = expected
+								// where	skippedCharsCount = 1 for \n
 	char c;
 	while (plik.get(c))
 	{
 		if (getMaskFromCharacter(c) == MASK0)						// znak nie jest w obslugiwanym maksymalnym alfabacie (znak bialy lub nie przewidziano jego uzycia)
 		{
+			skippedCharsCount++;
 			i++;
 			continue;
 		}
@@ -200,12 +210,18 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 		if (!(getMaskFromCharacter(c) & automat.alfabet))		// znak jest w obslugiwanym (ogolnym) alfabecie ale nie w alfabecie (szczegolnym) wzorca 
 		{
 			automat.stan = 0;
+			skippedCharsCount = 0;
+			i++;
 			continue;
 		}
 
 		if (getMaskFromCharacter(c) & automat.alfabet)
 		{
 			automat.nextStan(c);
+			if (automat.stan == 0)
+			{
+				skippedCharsCount = 0;
+			}
 		}
 
 		if (automat.stan == dlWzorca)
@@ -213,7 +229,7 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 			switch (tryb)
 			{
 			case 0: // zliczanie i wypisywanie
-				std::cout << "Znaleziono wzorzec: " << argv[2] << " w miejscu " << i - dlWzorca << " znaku. Jest to " << ilosc_wystapien + 1 << " wystapienie\n";
+				std::cout << "Znaleziono wzorzec: " << argv[2] << " w miejscu " << i - dlWzorca + 1 - skippedCharsCount<< " znaku. Jest to " << ilosc_wystapien + 1 << " wystapienie\n";
 			case 1: // tylko zliczanie
 				ilosc_wystapien++;
 				break;

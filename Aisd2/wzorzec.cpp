@@ -1,3 +1,6 @@
+//https://github.com/kaienooo/AiSD2/
+//niektore wyjasnienia i dane
+
 // Wyszukuje liczbe w ciagu liczb - moim zdaniem zooptymalizowane pod wlasnie liczby, a nie traktowanie liczb jako ciagow znakow (stad niewystepowanie zwyklego algorytu naiwnego dla tablicy znakow)
 // Nie optymalizowano algorytmu jako takiego, ale w to jaki sposob obsluguje dane
 
@@ -154,11 +157,44 @@ void inicjalizujBufor(char*& bufor, int lenght)
 }
 */
 
-int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szukany wzorzec, arg 3 - hash_int (rozmiar bazy hashowania), arg 4 tryb (0  - wypisz wszystkie, 1 - tylko zlicz)
-																																		// wypisywanie spowalnia przeszukiwanie pliku
-																																		// gdyz wypisanie do strumienia wyjsciowego prawdopodobnie wypisuje z ramu
-																																		// + do tego napis zajmuje duzo wiecej pamieci niz pare liczb
+int main(int argc, char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szukany wzorzec, arg 3 - hash_int (rozmiar bazy hashowania), arg 4 tryb (0  - wypisz wszystkie, 1 - tylko zlicz)
+// wypisywanie spowalnia przeszukiwanie pliku
+// gdyz wypisanie do strumienia wyjsciowego prawdopodobnie wypisuje z ramu
+// + do tego napis zajmuje duzo wiecej pamieci niz pare liczb
 {
+
+	/*
+	for (int i = 0; i < argc; i++)
+	{
+		delete[] argv[i];
+	}
+	*/
+
+	//ARGUMENTY TESTOWE
+	/*
+	argc = 5;
+
+	char** argt = new char*[5];
+	argt[0] = new char[10];
+	memmove(argt[0], "Aisd2.exe", 10);
+
+	argt[1] = new char[25];
+	memmove(argt[1], "C:\\aisd2\\Aisd2\\dane_cop2", 25);
+
+	argt[2] = new char[4];
+	memmove(argt[2], "213", 4);
+
+	argt[3] = new char[3];
+	memmove(argt[3], "13", 3);
+
+	argt[4] = new char[2];
+	memmove(argt[4], "0", 2);
+
+
+	argv = argt;
+	*/
+
+
 	int hash_int = 0;
 	bool blad = 0;
 	int tryb = 0;
@@ -223,6 +259,7 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 	char* temp_napis = new char[dl_wzorca];
 
 	int i = 0;
+	int z = 0;	// ile poczatkowych znakow zaladowano
 	int napis_int = 0;
 	int ten_to_the_x = potega(10, dl_wzorca - 1);
 
@@ -233,18 +270,18 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 	{
 		//std::cout << c << " " << i <<std::endl;
 		// sekcja poczatkowa
-		if (c == ' ' or c == '\n' or c == '\t' or c == '-')
+		if (c == ' ' or c == '\n' or c == '\t')
 		{
 			i++;
 			continue;
 		}
-		if (i < dl_wzorca)
+
+		if (z < dl_wzorca)				// 0,1,2, .. ,dl_wzorca - 1
 		{
-			temp_napis[i] = c;
-		}
-		else
-		{
-			if (i == dl_wzorca)
+			temp_napis[z] = c;
+			z++;
+
+			if (z == dl_wzorca)
 			{
 				napis_int = charPtrToInt(temp_napis, dl_wzorca, blad);		//int charPtrToInt(const char* napis, int dl_napisu, bool& blad)
 				if (blad)
@@ -253,35 +290,38 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 					return napis_int;
 				}
 				delete[] temp_napis;
-			}		
-			if (hashuj(napis_int, hash_int) == hashuj(wzorzec_int, hash_int))
-			{
-				if (naiwny(napis_int, wzorzec_int))
-				{
-					switch (tryb)
-					{
-					case 0: // zliczanie i wypisywanie
-						std::cout << "Znaleziono wzorzec: " << wzorzec_int << " w miejscu " << i - dl_wzorca << " znaku. Jest to " << ilosc_wystapien + 1<< " wystapienie\n";
-					case 1: // tylko zliczanie
-						ilosc_wystapien++;
-						break;
-					default:
-						break;
-					}
-				}
 			}
-			//napis_int(i + 1) = ...
-
+		}
+		else
+		{
 			int cInt = AsciiToInt(c, blad);
 			if (blad)
 			{
-				std::cout << "Nieprawidlowy znak na " << i << " miejscu ERROR 6\n";
+				std::cout << " Nieprawidlowy znak na " << i << " miejscu\n";
 				return cInt;
 			}
-
 			napis_int = nextNapisInt(cInt, ten_to_the_x, napis_int);
 		}
+
+		if (hashuj(napis_int, hash_int) == hashuj(wzorzec_int, hash_int))
+		{
+			if (naiwny(napis_int, wzorzec_int))						// no i uzycie algorytmu algorytmu naiwnego mimo ze on tylko porownuje dwie liczby, ale zeby bylo jasne
+			{
+				switch (tryb)
+				{
+				case 0: // zliczanie i wypisywanie
+					std::cout << "Znaleziono wzorzec: " << wzorzec_int << " w miejscu " << i - dl_wzorca + 1<< " znaku. Jest to " << ilosc_wystapien + 1 << " wystapienie\n";
+				case 1: // tylko zliczanie
+					ilosc_wystapien++;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		
 		i++;
+
 	}
 
 	std::cout << "\nLacznie " << ilosc_wystapien << " trafien";
