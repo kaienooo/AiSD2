@@ -143,7 +143,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="wzorzec.cpp" />
+    <None Include="dane_graf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="graf.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="automat.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

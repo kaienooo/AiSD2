@@ -242,6 +242,10 @@ int main(int argc, const char* argv[])	// arg 1 - sciezka do pliku, arg 2 - szuk
 
 	std::cout << "\nLacznie " << ilosc_wystapien << " trafien";
 
+
+	std::cout << std::endl;
+	automat.wypiszMaszyneStanow();
+
 	plik.close();
 }
 
