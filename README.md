@@ -19,7 +19,7 @@ WYSZUKIWANIE WZORCA:
 
 przyklad z wnetrza katalogu aisd2
 
-	 .\Build\x64\Release\bin\Aisd2.exe .\Aisd2\dane 0
+	 .\Build\x64\Release\bin\Aisd2.exe .\Aisd2\dane abc 0
   
 1) dla programow wzorzec.cpp, automat.cpp, akmp.cpp uruchomic poleceniem
 {.exe path} {data path} {wzorzec} ?{hash int} {tryb}
