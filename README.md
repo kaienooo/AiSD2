@@ -36,10 +36,10 @@ UWAGA!
 	- algorytm w wzorzec.cpp przyjmuje tylko niezerowe liczby jako wzorzec
 	- automat skonczony przyjmuje we wzorcu litery i liczby, bez znakow specjalnych
  
--tryb:
+-tryb (opcjonalne):
 
 0 - tryb odczyt/zliczanie
 
 1 - tylko zliczanie
  
--hash int	tylko dla wzorzec.cpp, domyslnie =13, "wielkosc bazy" liczba ktora jest argumentem operacji modulo
+-hash int (opcjonalne)	tylko dla wzorzec.cpp, domyslnie =13, "wielkosc bazy" liczba ktora jest argumentem operacji modulo
